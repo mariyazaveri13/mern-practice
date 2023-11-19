@@ -22,7 +22,7 @@ app.use(function (req, res, next) {
 });
 
 //Mount routes
-app.use('/route', route);
+app.use('/', route);
 
 const PORT = 5000;
 

@@ -39,6 +39,48 @@ import {
 } from '@chakra-ui/react';
 import axios from 'axios';
 export default function Home() {
+  const [state, setState] = useState({
+    data: [],
+  });
+
+  useEffect(() => {
+    getData();
+  }, []);
+
+  async function getData() {
+    try {
+      const data = await axios.get('http://localhost:5000');
+      console.log(data.data);
+      setState((preState) => ({
+        ...preState,
+        data: data.data.data,
+      }));
+    } catch (error) {}
+  }
+
+  function formatDate(date) {
+    let d = new Date(date);
+    return `${d.getDate()} / ${d.getMonth() + 1} / ${d.getFullYear()}`;
+  }
+
+  async function onDeleteHandler(id) {
+    try {
+      const data = await axios.delete(`http://localhost:5000/${id}`);
+
+      console.log(data);
+
+      alert(data.data.message);
+
+      setState((preState) => ({
+        ...preState,
+        data: preState.data.filter((d) => id != d._id),
+      }));
+    } catch (error) {
+      if (error.response.data.message) alert(error.response.data.message);
+      else alert(error.message);
+    }
+  }
+
   return (
     <>
       <Flex minWidth="max-content" alignItems="center" gap="2">
@@ -88,32 +130,42 @@ export default function Home() {
             </Tr>
           </Thead>
           <Tbody>
-            <Tr>
-              <Td>{}</Td>
-              <Td>{}</Td>
-              <Td>{}</Td>
-              <Td>{}</Td>
-              <Td>{}</Td>
-              <Td isNumeric>
-                {/* <ButtonGroup>
-                      <ReactRouterLink
-                        to="/addmanagerreview"
-                        state={{ manager: d, type: 'view' }}
-                      >
-                        <Button>View More</Button>
-                      </ReactRouterLink>
-                      <ReactRouterLink
-                        to="/addmanagerreview"
-                        state={{ manager: d, type: 'edit' }}
-                      >
-                        <Button>Edit</Button>
-                      </ReactRouterLink>
-                      <Button onClick={() => onDeleteHandler(d._id)}>
-                        Delete
-                      </Button>
-                    </ButtonGroup> */}
-              </Td>
-            </Tr>
+            {state.data.length > 0 ? (
+              state.data.map((d) => {
+                return (
+                  <Tr key={d._id}>
+                    <Td>{d.name}</Td>
+                    <Td>{d.age}</Td>
+                    <Td>{d.email}</Td>
+                    <Td>{formatDate(d.createdDate)}</Td>
+                    <Td>{d.gender}</Td>
+                    <Td isNumeric>
+                      <ButtonGroup>
+                        <ReactRouterLink
+                          to="/details"
+                          state={{ person: d, type: 'view' }}
+                        >
+                          <Button>View More</Button>
+                        </ReactRouterLink>
+                        <ReactRouterLink
+                          to="/details"
+                          state={{ person: d, type: 'edit' }}
+                        >
+                          <Button>Edit</Button>
+                        </ReactRouterLink>
+                        <Button onClick={() => onDeleteHandler(d._id)}>
+                          Delete
+                        </Button>
+                      </ButtonGroup>
+                    </Td>
+                  </Tr>
+                );
+              })
+            ) : (
+              <Tr>
+                <Td> No Data Found</Td>
+              </Tr>
+            )}
           </Tbody>
         </Table>
       </TableContainer>

@@ -1,6 +1,5 @@
 const express = require('express');
 const Person = require('../model/Person');
-const Manager = require('../../../01-manager-evaluation/backend/model/Manager');
 const router = express.Router();
 
 router.get('/', async (req, res) => {
@@ -89,19 +88,19 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    if (req.body.age > 10) {
+    if (req.body.age < 10) {
       return res.status(400).json({
         message: 'Age should be greater than 10',
       });
     }
 
-    if (!req.body.name.test(/^[a-zA-Z ]$/)) {
+    if (!/^[a-zA-Z ]*$/.test(req.body.name)) {
       return res
         .status(400)
         .json({ message: 'Name should only contain words' });
     }
 
-    if (!req.body.age.test(/^[0-9]$/)) {
+    if (!/^[0-9]\d*$/.test(req.body.age)) {
       return res.status(400).json({
         message: 'Age should only have letters',
       });
@@ -144,6 +143,8 @@ router.patch('/:id', async (req, res) => {
 
     if (req.body.hobbies) req.body.hobbies = req.body.hobbies.split(',');
 
+    req.body.updatedAt = new Date();
+
     const data = await Person.findByIdAndUpdate(id, req.body);
 
     return res.status(200).json({
@@ -165,6 +166,12 @@ router.delete('/:id', async (req, res) => {
         message: 'Data not found',
       });
     }
+
+    await Person.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      message: 'Data deleted',
+    });
   } catch (error) {
     res.status(400).json({
       message: error.message,
@@ -172,4 +179,4 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-modlue.exports = router;
+module.exports = router;
