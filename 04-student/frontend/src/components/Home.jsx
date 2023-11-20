@@ -126,9 +126,6 @@ export default function Home() {
 
   return (
     <>
-      <button type="button">
-        <Link to="/form">Add Student</Link>
-      </button>
       <form onSubmit={submitHandler}>
         <div>
           <h2>Sort and filter</h2>
@@ -320,7 +317,12 @@ export default function Home() {
           </button>
         </div>
       </form>
-      <h1>Home</h1>
+      <h2>Details</h2>
+      <button type="button">
+        <Link to="/form">Add Student</Link>
+      </button>
+      <br></br>
+      <br></br>
       <table>
         <thead>
           <tr>
@@ -349,7 +351,11 @@ export default function Home() {
                   <td>
                     {
                       <>
-                        <button>Edit</button>{' '}
+                        <button>
+                          <Link to="/form" state={{ student: d, type: 'edit' }}>
+                            Edit
+                          </Link>
+                        </button>{' '}
                         <button
                           type="button"
                           onClick={() => deleteHandler(d._id)}

@@ -1,18 +1,26 @@
 import axios from 'axios';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 export default function Form() {
+  const location = useLocation();
+  const { student, type } =
+    location && location.state !== null
+      ? location.state
+      : { student: {}, type: '' };
+
   const [state, setState] = useState({
-    name: '',
-    email: '',
-    extraClassOpted: '',
-    gender: '',
-    hobbies: '',
-    languages: '',
-    paper1: '',
-    paper2: '',
-    paper3: '',
+    name: student.name || '',
+    email: student.email || '',
+    extraClassOpted: student.extraClassOpted || false,
+    gender: student.gender || '',
+    hobbies: student.hobbies || '',
+    languages: student.languages || '',
+    paper1: student.paper1 || '',
+    paper2: student.paper2 || '',
+    paper3: student.paper3 || '',
+    type: type || '',
+    id: student._id || '',
   });
 
   function changeHandler(e) {
@@ -69,7 +77,6 @@ export default function Form() {
     if (
       !name ||
       !email ||
-      !extraClassOpted ||
       !gender ||
       !hobbies ||
       !languages ||
@@ -101,7 +108,13 @@ export default function Form() {
 
   async function sendData() {
     try {
-      const data = await axios.post('http://localhost:5000', state);
+      let data;
+
+      if (state.type) {
+        data = await axios.patch(`http://localhost:5000/${state.id}`, state);
+      } else {
+        data = await axios.post('http://localhost:5000', state);
+      }
       alert(data.data.message);
     } catch (error) {
       if (error.response.data.message) alert(error.response.data.message);
