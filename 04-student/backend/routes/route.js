@@ -104,6 +104,7 @@ router.post('/', async (req, res) => {
       Number(req.body.paper1) +
       Number(req.body.paper2) +
       Number(req.body.paper3);
+    req.body.hobbies = req.body.hobbies.split(',');
 
     const data = await Student.create(req.body);
 
