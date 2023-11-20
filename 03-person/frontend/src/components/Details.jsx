@@ -217,10 +217,11 @@ export default function Details() {
                 <Stack spacing={[1, 5]} direction={['column', 'row']}>
                   <Checkbox
                     name="readsNewspaper"
-                    checked={state.readsNewspaper}
                     onChange={onChangeHandler}
                     disabled={type == 'view'}
+                    checked={Boolean(state.readsNewspaper)}
                   >
+                    {console.log(state.readsNewspaper, 'reads')}
                     Do you?
                   </Checkbox>
                 </Stack>
