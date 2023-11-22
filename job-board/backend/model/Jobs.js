@@ -17,6 +17,8 @@ const JobsSchema = new mongoose.Schema({
   qualification: {
     type: String,
   },
+
+  
   jobSalary: {
     type: Number,
     required: true,
