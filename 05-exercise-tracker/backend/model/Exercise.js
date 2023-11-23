@@ -3,8 +3,8 @@ const mongoose = require('mongoose')
 const ExerciseSchema = new mongoose.Schema({
 
     userName:{
-        required:true,
         type:String,
+        required:true,
         trim:true,
         immutable:true
     },

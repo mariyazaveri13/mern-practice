@@ -11,10 +11,11 @@ const UserSchema = new mongoose.Schema({
         immutable:true
     },
     name:{
-        required:true,
+        type:String,
         trim:true,
         minLength:[3,'Please enter bigger than 3 characters'],
-        match:[/^[a-zA-Z ]*$/,'Only alphabets are allowed in name']
+        match:[/^[a-zA-Z ]*$/,'Only alphabets are allowed in name'],
+        required:true,
     },
     gender:{
         type:String,

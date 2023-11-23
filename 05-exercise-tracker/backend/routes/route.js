@@ -232,14 +232,21 @@ router.get('/users',async (req,res)=>{
         const data = await Exercises.aggregate([
             {
                 $group:{
-                    id:'$userName',
+                    _id:'$userName',
                     totalDuration :{ $sum: '$duration' }
                 },
+            },{
                 $sort:{
                     totalDuration : -1
                 }
             }
         ])
+
+        res.status(200).json({
+            message:"Ok",
+            count:data.length,
+            data
+        })
 
     } catch (error) {
         res.status(400).json({
