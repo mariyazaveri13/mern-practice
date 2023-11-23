@@ -7,7 +7,8 @@ const UserSchema = new mongoose.Schema({
         required:true,
         trim:true,
         unique:true,
-        match:[/^[a-zA-Z]*$/,'Please enter valid user names']
+        match:[/^[a-zA-Z]*$/,'Please enter valid user names'],
+        immutable:true
     },
     name:{
         required:true,

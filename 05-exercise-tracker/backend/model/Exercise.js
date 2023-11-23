@@ -5,7 +5,8 @@ const ExerciseSchema = new mongoose.Schema({
     userName:{
         required:true,
         type:String,
-        trim:true
+        trim:true,
+        immutable:true
     },
     description:{
         type:String,

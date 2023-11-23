@@ -21,7 +21,7 @@ router.get('/exe/:userName', async (req,res)=>{
         const sortObj = {}
         const searchObj={}
 
-        const { searchByDescription , sortByDuration ,searchByType } = req.query
+        const { searchByDescription , sortByDuration ,searchByType, gtDuration, ltDuration } = req.query
 
         if(searchByDescription){
             searchObj.description = new RegExp(searchByDescription,'i')
@@ -40,6 +40,18 @@ router.get('/exe/:userName', async (req,res)=>{
                 $in:type
             }
         }
+
+        if(gtDuration || ltDuration){
+            const gtlt={}
+            if(gtDuration)
+            {
+                gtlt.$gt = gtDuration
+            }
+            if(ltDuration){
+                gtlt.$lt = ltDuration
+            }
+            searchObj.duration = gtlt
+        }
         
 
         const exercises = await Exercises.collation({locale:'en'}).sort(sortObj).find(searchObj)
@@ -48,6 +60,83 @@ router.get('/exe/:userName', async (req,res)=>{
             message:"Ok",
             count:exercises.length,
             exercises
+        })
+        
+    } catch (error) {
+        res.status(400).json({
+            message:error.message
+        })
+    }
+})
+
+router.post('/exe/:userName', async (req,res)=>{
+    try {
+        
+        let userName = req.params.userName
+        
+        const data = await Users.findOne({userName:userName})
+
+        if(!data){
+            return res.status(404).json({
+                message:"User does not exist"
+            })
+        }
+
+        req.body.type = req.body.type.split(',')
+
+        const newData = await Exercises.create(req.body)
+
+        res.status(201).json({
+            message:"Exercise created"
+        })
+
+    } catch (error) {
+     res.status(400).json({
+        message:error.message
+     })   
+    }
+})
+
+router.patch('/exe/:id',async (req,res)=>{
+    try {
+        let id = req.params.id
+        const oldData = await Exercises.findById(id)
+
+        if(!oldData){
+            return res.status(404).json({
+                message:"Data not found for provided ID"
+            })
+        }
+
+        const data = await Exercises.findByIdAndUpdate(id,req.body,{runValidators:true})
+
+        res.status(200).json({
+            message:"Data updated"
+        })
+
+
+    } catch (error) {
+     res.status(400).json({
+        message:error.message
+     })   
+    }
+})
+
+router.delete('/exe/:id', async (req,res)=>{
+    try {
+        let id = req.params.id
+        const oldData = await Exercises.findById(id)
+
+        if(!oldData){
+            return res.status(404).json({
+                message:"No data found"
+            })
+        }
+
+        await Exercises.findByIdAndDelete(id)
+
+        res.status(200).json({
+            message:"Data deleter"
         })
         
     } catch (error) {
