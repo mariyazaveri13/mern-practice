@@ -108,6 +108,10 @@ router.patch('/exe/:id',async (req,res)=>{
             })
         }
 
+        req.body.type = req.body.type.split(',')
+
+        req.body.updatedAt = new Date()
+
         const data = await Exercises.findByIdAndUpdate(id,req.body,{runValidators:true})
 
         res.status(200).json({
@@ -136,9 +140,179 @@ router.delete('/exe/:id', async (req,res)=>{
         await Exercises.findByIdAndDelete(id)
 
         res.status(200).json({
-            message:"Data deleter"
+            message:"Data deleted"
         })
         
+    } catch (error) {
+        res.status(400).json({
+            message:error.message
+        })
+    }
+})
+
+/***
+ * For users individual: create a new route entirely for on click of user that shows some kind of stats
+ * 
+ * For users leaderboard (main route only but sort by total duration of each users) 
+ * : create an aggregator that kinda shows who did what and max
+ * 
+ * on delete of user, first delete all exercises related to that user and then delete the user himself
+ * 
+ */
+
+router.get('/userAnalytics/:id', async (req,res)=>{
+    try {
+        
+        let id = req.params.id
+
+        const userData = await Users.findById(id)
+
+        if(!userData){
+            return res.status(404).json({
+                message:'No user exists with your ID'
+            })
+        }
+        
+        /***
+         * Total duration of his exercise 
+         * Highest 3 durations of exercise
+         * Most performed type of exercise
+         */
+
+        const data = await Exercises.aggregate([
+            {
+                $match:{
+                    userName:userData.userName,
+                    totalDuration:{
+                        $sum:'$duration'
+                    }
+                },
+                $project:{
+                    totalDuration:1,
+                    userName:1
+                }
+            },
+        ])
+
+        const top3Data = await Exercises.find({userName:userData.userName}).sort({duration:-1}).limit(3)
+
+        const mostPerformedExercises = await Exercises.aggregate([
+            {
+                $unwind:'$type'
+            },
+            {
+                $group:{ _id:'$type', totalCount : {count:{ $sum: 1}}}
+            },
+            {
+                $sort:{ totalCount:-1 }
+            }
+        ])
+        
+        const finalObj = {
+            totalDuration : data,
+            top3Data,
+            mostPerformedExercises
+        }
+
+        res.status(200).json({
+            message:'Ok',
+            finalObj
+        })
+
+    } catch (error) {
+        res.status(400).json({
+            message:error.message
+        })
+    }
+})
+
+router.get('/users',async (req,res)=>{
+    try {
+        
+        const data = await Exercises.aggregate([
+            {
+                $group:{
+                    id:'$userName',
+                    totalDuration :{ $sum: '$duration' }
+                },
+                $sort:{
+                    totalDuration : -1
+                }
+            }
+        ])
+
+    } catch (error) {
+        res.status(400).json({
+            message:error.message
+        })
+    }
+})
+
+router.post('/users', async (req,res)=>{
+    try {
+        
+        const data = await Users.create(req.body)
+
+        res.status(201).json({
+            message:`User created with ID : ${data._id} and UserName : ${data.userName}`
+        })
+
+    } catch (error) {
+        res.status(400).json({
+            message:error.message
+        })
+    }
+})
+
+router.patch('/users/:id',async (req,res)=>{
+    try {
+
+        let id = req.params.id
+
+        const oldData = await Users.findById(id)
+
+        if(!oldData){
+            return res.status(404).json({
+                message:'No data found with provided ID'
+            })
+        }
+
+        req.body.updatedAt = new Date()
+
+        const data = await Users.findByIdAndUpdate(id,req.body)
+
+        res.status(200).json({
+            message:"Data updated boiis"
+        })
+        
+    } catch (error) {
+        res.status(400).json({
+            message:error.message
+        })
+    }
+})
+
+
+router.delete('/users/:id', async (req,res)=>{
+    try {
+        let id = req.params.id
+        
+        const oldData = await Users.findById(id)
+
+        if(!oldData){
+            return res.status(404).json({
+                message:"No data found with given ID"
+            })
+        }
+
+        await Exercises.deleteMany({userName:oldData.userName})
+
+        await Users.findByIdAndDelete(id)
+
+        res.status(200).json({
+            message:"Data deleted from users table and exercise table"
+        })
+
     } catch (error) {
         res.status(400).json({
             message:error.message
