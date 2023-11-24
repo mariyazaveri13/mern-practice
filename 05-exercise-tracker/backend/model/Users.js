@@ -3,9 +3,10 @@ const mongoose = require('mongoose')
 const UserSchema = new mongoose.Schema({
     userName:{
         type:String,
-        minLength:[3,'Please enter a proper name'],
+        minLength:[3,'User Name should be at least 3 characters long'],
         required:true,
         trim:true,
+        index: true,
         unique:true,
         match:[/^[a-zA-Z]*$/,'Please enter valid user names'],
         immutable:true
@@ -29,7 +30,7 @@ const UserSchema = new mongoose.Schema({
     },
     birthDate:{
         type:Date,
-        required:true
+        // required:true
     },
     createdAt:{
         type:Date,

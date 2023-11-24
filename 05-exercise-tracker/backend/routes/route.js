@@ -8,7 +8,7 @@ const router = express.Router()
 router.get('/exe/:userName', async (req,res)=>{
     try {
 
-        const userName = req.params.userName
+        let userName = new RegExp(['^',req.params.userName,'$'].join(''))
 
         const user = await Users.findOne({userName:userName})
 
@@ -20,6 +20,8 @@ router.get('/exe/:userName', async (req,res)=>{
 
         const sortObj = {}
         const searchObj={}
+
+        searchObj.userName = userName
 
         const { searchByDescription , sortByDuration ,searchByType, gtDuration, ltDuration } = req.query
 
@@ -54,7 +56,7 @@ router.get('/exe/:userName', async (req,res)=>{
         }
         
 
-        const exercises = await Exercises.collation({locale:'en'}).sort(sortObj).find(searchObj)
+        const exercises = await Exercises.find(searchObj).collation({locale:'en'}).sort(sortObj)
 
         res.status(200).json({
             message:"Ok",
@@ -72,7 +74,7 @@ router.get('/exe/:userName', async (req,res)=>{
 router.post('/exe/:userName', async (req,res)=>{
     try {
         
-        let userName = req.params.userName
+        let userName = new RegExp(['^',req.params.userName,'$'].join(''))
         
         const data = await Users.findOne({userName:userName})
 
@@ -83,6 +85,8 @@ router.post('/exe/:userName', async (req,res)=>{
         }
 
         req.body.type = req.body.type.split(',')
+
+        req.body.userName = userName
 
         const newData = await Exercises.create(req.body)
 
@@ -160,19 +164,19 @@ router.delete('/exe/:id', async (req,res)=>{
  * 
  */
 
-router.get('/userAnalytics/:id', async (req,res)=>{
+router.get('/userAnalytics/:userName', async (req,res)=>{
     try {
         
-        let id = req.params.id
+        let userName = req.params.userName
 
-        const userData = await Users.findById(id)
+        const userData = await Users.findOne({userName:userName})
 
         if(!userData){
             return res.status(404).json({
-                message:'No user exists with your ID'
+                message:'No user exists with your username'
             })
         }
-        
+
         /***
          * Total duration of his exercise 
          * Highest 3 durations of exercise
@@ -183,10 +187,17 @@ router.get('/userAnalytics/:id', async (req,res)=>{
             {
                 $match:{
                     userName:userData.userName,
+                },
+            },
+            {
+                $group:{
+                    _id:userData.userName,
                     totalDuration:{
                         $sum:'$duration'
-                    }
-                },
+                    },
+                }
+            },
+            {
                 $project:{
                     totalDuration:1,
                     userName:1
@@ -198,25 +209,26 @@ router.get('/userAnalytics/:id', async (req,res)=>{
 
         const mostPerformedExercises = await Exercises.aggregate([
             {
+                $match:{
+                    userName:userData.userName,
+                }
+            },
+            {
                 $unwind:'$type'
             },
             {
-                $group:{ _id:'$type', totalCount : {count:{ $sum: 1}}}
+                $group:{ _id:'$type', totalCount : { $sum: 1}}
             },
             {
                 $sort:{ totalCount:-1 }
             }
         ])
         
-        const finalObj = {
+        res.status(200).json({
+            message:'Ok',
             totalDuration : data,
             top3Data,
             mostPerformedExercises
-        }
-
-        res.status(200).json({
-            message:'Ok',
-            finalObj
         })
 
     } catch (error) {
@@ -229,18 +241,7 @@ router.get('/userAnalytics/:id', async (req,res)=>{
 router.get('/users',async (req,res)=>{
     try {
         
-        const data = await Exercises.aggregate([
-            {
-                $group:{
-                    _id:'$userName',
-                    totalDuration :{ $sum: '$duration' }
-                },
-            },{
-                $sort:{
-                    totalDuration : -1
-                }
-            }
-        ])
+        const data = await Users.find()
 
         res.status(200).json({
             message:"Ok",
