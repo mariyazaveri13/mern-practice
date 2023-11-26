@@ -1,10 +1,29 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
 export default function Stats() {
   //set State
-  const [state, setState] = useState({});
+
+  useEffect(() => {
+    getData();
+  }, []);
+
+  async function getData() {
+    try {
+      const res = await axios.get('http://localhost:5000/stats');
+      setState((p) => ({
+        ...p,
+        totalNumOfProducts: res.data[0].totalNumOfProducts,
+        avgProdPrice: res.data[0].avgProdPrice,
+      }));
+    } catch (error) {}
+  }
+
+  const [state, setState] = useState({
+    totalNumOfProducts: '',
+    avgProdPrice: '',
+  });
 
   return (
     <>
@@ -17,11 +36,9 @@ export default function Stats() {
         <Link to='/'>Home</Link>
       </button>
 
-      <div>Total number of products : {}</div>
+      <div>Total number of products : {state.totalNumOfProducts}</div>
 
-      <div>Average product price : {}</div>
-
-      <div>Category with the most products : {}</div>
+      <div>Average product price : {state.avgProdPrice}</div>
     </>
   );
 }
