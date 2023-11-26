@@ -1,0 +1,41 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+body{
+  background-color: beige;
+  color: rgb(72, 61, 0);
+  font-size: large;
+}
+
+input,select{
+  padding: 10px;
+  margin: 10px;
+  border-radius: 0.4em;
+}
+
+a{
+  color: antiquewhite !important;
+}
+
+button:hover{
+  opacity: 0.7;
+}
+
+button{
+  margin: 5px;
+}
+
+table,
+th,
+td {
+  border: 1px solid black;
+  padding: 5px;
+}
+
+div {
+  padding: 5px;
+}
