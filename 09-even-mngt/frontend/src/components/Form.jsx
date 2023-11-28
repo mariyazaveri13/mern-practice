@@ -2,7 +2,7 @@ import { useState } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
-export default function Form() {
+export default function Form(props) {
   //set State
   const [state, setState] = useState({
     title: '',
@@ -34,7 +34,6 @@ export default function Form() {
 
     try {
       if (!validateDate(state.date)) {
-        console.log('date validation failed');
         alert('Date cannot be of past');
         return;
       }
@@ -43,8 +42,6 @@ export default function Form() {
         alert('Please add attendees');
         return;
       }
-
-      console.log(state);
 
       const res = await axios.post('http://localhost:5000', state);
       alert(res.data.message);
@@ -96,7 +93,8 @@ export default function Form() {
             name='title'
             placeholder='Please Enter title'
             onChange={handleChange}
-            value={state.title}
+            value={!props.type ? state.title : props.title}
+            disabled={props.type === 'view'}
           />
         </div>
         <div>
@@ -105,7 +103,8 @@ export default function Form() {
             name='description'
             placeholder='Please Enter description'
             onChange={handleChange}
-            value={state.description}
+            value={!props.type ? state.description : props.description}
+            disabled={props.type === 'view'}
           />
         </div>
         <div>
@@ -114,7 +113,8 @@ export default function Form() {
             name='date'
             placeholder='Please Enter date'
             onChange={handleChange}
-            value={state.date}
+            value={!props.type ? state.date : props.date}
+            disabled={props.type === 'view'}
           />
         </div>
         <div>
@@ -123,18 +123,25 @@ export default function Form() {
             name='location'
             placeholder='Please Enter location'
             onChange={handleChange}
-            value={state.location}
+            value={!props.type ? state.location : props.location}
+            disabled={props.type === 'view'}
           />
         </div>
-        <div>
-          <button
-            type='button'
-            name='addAttendee'
-            onClick={handleAddAttendee}>
-            Add attendee
-          </button>
-        </div>
-        {
+
+        {props.type !== 'view' && (
+          <div>
+            <button
+              type='button'
+              name='addAttendee'
+              onClick={
+                !props.type ? handleAddAttendee : props.handleAddAttendee
+              }>
+              Add attendee
+            </button>
+          </div>
+        )}
+        <h2>Attendees:</h2>
+        {!props.type &&
           /* //have a map and iterate amongst all the attendees */
           state.attendees.map((a, index) => {
             return (
@@ -165,12 +172,53 @@ export default function Form() {
                 </div>
               </div>
             );
-          })
-        }
-
-        <div>
-          <button onClick={handleSubmit}>Submit</button>{' '}
-        </div>
+          })}
+        {props.type &&
+          /* //have a map and iterate amongst all the attendees */
+          props.attendees.map((a, index) => {
+            return (
+              <div key={index}>
+                <div>
+                  <input
+                    type='text'
+                    name='name'
+                    placeholder='Please Enter name'
+                    value={a.name}
+                    disabled={props.type === 'view'}
+                    onChange={(e) =>
+                      props.handleAttendeeChange(index, 'name', e.target.value)
+                    }
+                    required
+                  />
+                </div>
+                <div>
+                  <input
+                    type='text'
+                    name='feedback'
+                    placeholder='Please Enter feedback'
+                    value={a.feedback}
+                    disabled={props.type === 'view'}
+                    onChange={(e) =>
+                      props.handleAttendeeChange(
+                        index,
+                        'feedback',
+                        e.target.value
+                      )
+                    }
+                    required
+                  />
+                </div>
+              </div>
+            );
+          })}
+        {props.type !== 'view' && (
+          <div>
+            <button
+              onClick={!props.type ? handleSubmit : props.handleSubmitEdit}>
+              Submit
+            </button>{' '}
+          </div>
+        )}
       </form>
     </>
   );

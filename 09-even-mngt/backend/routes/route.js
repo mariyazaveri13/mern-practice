@@ -23,6 +23,7 @@ eventRouter.get('/', async (req,res)=>{
             searchObj.location = new RegExp(searchByLocation,'i')
         }
 
+        //Filter by Date
         if(filterByDate){
             searchObj.date = {
                 $eq : new Date(filterByDate)
